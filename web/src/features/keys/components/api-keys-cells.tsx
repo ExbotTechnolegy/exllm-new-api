@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Check, Copy, Loader2 } from 'lucide-react'
+import { ArrowRightLeft, Check, Copy, Loader2 } from 'lucide-react'
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -43,6 +43,9 @@ import { useApiKeys } from './api-keys-provider'
 export function ApiKeyCell({ apiKey }: { apiKey: ApiKey }) {
   const { t } = useTranslation()
   const {
+    setOpen,
+    setCurrentRow,
+    setResolvedKey,
     resolveRealKey,
     resolvedKeys,
     loadingKeys,
@@ -73,6 +76,21 @@ export function ApiKeyCell({ apiKey }: { apiKey: ApiKey }) {
     const ok = await copyToClipboard(realKey)
     if (ok) markKeyCopied(apiKey.id)
   }, [resolvedFullKey, resolveRealKey, apiKey.id, markKeyCopied])
+
+  const handleCCSwitch = useCallback(async () => {
+    const realKey = resolvedFullKey || (await resolveRealKey(apiKey.id))
+    if (!realKey) return
+    setResolvedKey(realKey)
+    setCurrentRow(apiKey)
+    setOpen('cc-switch')
+  }, [
+    resolvedFullKey,
+    resolveRealKey,
+    apiKey,
+    setResolvedKey,
+    setCurrentRow,
+    setOpen,
+  ])
 
   let copyIcon = <Copy className='size-3.5' />
   let copyTooltip = t('Copy API key')
@@ -130,6 +148,23 @@ export function ApiKeyCell({ apiKey }: { apiKey: ApiKey }) {
           {copyIcon}
         </TooltipTrigger>
         <TooltipContent>{copyTooltip}</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant='ghost'
+              size='icon'
+              className='size-7 shrink-0'
+              onClick={handleCCSwitch}
+              disabled={isLoading}
+              aria-label={t('Import to CC Switch')}
+            />
+          }
+        >
+          <ArrowRightLeft className='size-3.5' />
+        </TooltipTrigger>
+        <TooltipContent>{t('Import to CC Switch')}</TooltipContent>
       </Tooltip>
     </div>
   )

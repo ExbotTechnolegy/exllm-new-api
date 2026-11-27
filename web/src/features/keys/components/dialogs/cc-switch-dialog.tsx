@@ -50,6 +50,11 @@ const APP_CONFIGS = {
     defaultName: 'My Gemini',
     modelFields: [{ key: 'model', labelKey: 'Primary Model', required: true }],
   },
+  opencode: {
+    label: 'OpenCode',
+    defaultName: 'My OpenCode',
+    modelFields: [{ key: 'model', labelKey: 'Primary Model', required: true }],
+  },
 } as const
 
 type AppType = keyof typeof APP_CONFIGS
@@ -74,7 +79,10 @@ function buildCCSwitchURL(
   apiKey: string
 ): string {
   const serverAddress = getServerAddress()
-  const endpoint = app === 'codex' ? `${serverAddress}/v1` : serverAddress
+  const endpoint =
+    app === 'codex' || app === 'opencode'
+      ? `${serverAddress}/v1`
+      : serverAddress
   const params = new URLSearchParams()
   params.set('resource', 'provider')
   params.set('app', app)

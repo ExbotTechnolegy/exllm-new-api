@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXBOT AI | 寻者模型开放平台</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;color:#0E2841;background:white;font:16px/1.5 Inter,"PingFang SC",sans-serif}
+nav,main,footer{max-width:1200px;margin:auto;padding-inline:clamp(16px,3.4vw,40px)}
+header{border-bottom:1px solid #e6e8ef}
+nav,footer{display:flex;gap:18px;align-items:center;min-height:64px;font-size:14px}
+.brand{margin-right:auto;font-size:23px;font-weight:800}.brand small{margin-left:8px;font-size:13px}
+a{color:inherit;text-decoration:none}a:hover{text-decoration:underline}
+.console{background:#0E2841;color:white;border-radius:7px;padding:8px 14px}
+.team,.quick{margin-top:36px;padding:clamp(20px,3vw,32px);border:1px solid #e6e8ef;border-radius:16px}
+.team{display:grid;grid-template-columns:1fr 1fr;gap:24px}.team aside{background:#f5f5ff;border-radius:12px;padding:22px}.team aside a,.quick a{color:#0E2841}
+h2{margin:8px 0;font-size:clamp(21px,2.3vw,28px)}p{color:#4a4f66}
+pre{overflow:auto;background:#f7f8fb;padding:16px;border-radius:8px}
+footer{justify-content:space-between;margin-top:40px;border-top:1px solid #e6e8ef}
+@media(max-width:760px){.brand small{display:none}.team{grid-template-columns:1fr}}
+.hh-models{flex:.9 1 400px;min-width:300px;border:1px solid #e6e8f0;border-radius:14px;background:#fff;box-shadow:0 12px 32px #0E28410f;display:flex;flex-direction:column;overflow:hidden}
+.hh-models-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 14px}
+.hh-models-h b{font-size:15px}
+.hh-chips{display:flex;gap:6px}
+.hh-chip{border:1px solid #e2e4ee;border-radius:6px;padding:3px 10px;color:#4a4f66;background:#fff;font:inherit;font-size:12px;cursor:pointer}
+.hh-chip--on{background:#0E2841;border-color:#0E2841;color:#fff}
+.hh-mrow{display:flex;align-items:center;gap:14px;padding:14px 20px;border-top:1px solid #f0f1f6}
+.hh-mlogo{width:34px;height:34px;border-radius:8px;background:#f2f3f8;color:#3b3f55;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.hh-mlogo img{width:100%;height:100%;-o-object-fit:contain;object-fit:contain}
+.hh-minfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hh-mid{font-family:ui-monospace,JetBrains Mono,monospace;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hh-minfo span:last-child:not(.hh-mid){font-size:12px;color:#5d6278}
+.hh-mprice{font-size:12px;color:#5d6278;white-space:nowrap}
+.hh-mtry{height:30px;padding:0 12px;border:0;border-radius:7px;background:#eaf1f6;color:#0E2841;font-size:13px;font-weight:600;cursor:pointer}
+.hh-mtry:hover{background:#e0e4ff}
+.hh-models-f{margin-top:auto;padding:14px 20px;background:#f7f8fb;border-top:1px solid #ecedf3;display:flex;align-items:center;gap:10px}
+.hh-base{flex:1;min-width:0;font-size:12px;color:#3b3f55;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-family:ui-monospace,JetBrains Mono,monospace}
+.hh-copy,.hh-all{border:0;background:transparent;font:inherit;cursor:pointer}
+.hh-copy{height:28px;padding:0 10px;border-radius:6px;border:1px solid #d5d8e6;background:#fff;color:#3b3f55;font-size:12px}
+.hh-all{font-size:12px;font-weight:600;color:#0E2841;white-space:nowrap}
+.hh-models-empty{margin:0;padding:28px 18px;font-size:13px;color:#5d6278}
+.hh-models-skel{display:flex;flex-direction:column}
+.hh-models-skel-row{height:56px;border-top:1px solid #f0f1f6;background:linear-gradient(90deg,#f7f8fb,#eef0f6,#f7f8fb);background-size:200% 100%;animation:hh-shimmer-3fb04b36 1.2s ease-in-out infinite}
+@keyframes hh-shimmer-3fb04b36{0%{background-position:100% 0}
+to{background-position:-100% 0}
+}
+@media(max-width:1180px){.hh-models{min-width:0;width:100%;flex:none}
+}
+@media(max-width:760px){.hh-mprice,.hh-chips{display:none}
+}
+.hh-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));-moz-column-gap:12px;column-gap:12px;row-gap:10px;padding-top:4px}
+.cbtn{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;height:68px;min-width:0;padding:0 14px 0 16px;border-radius:12px;font:inherit;font-weight:700;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,background-color .12s ease}
+.cbtn-t{display:flex;flex-direction:column;gap:3px;min-width:0;text-align:left}
+.cbtn-t b{font-size:16px;line-height:1.2;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.cbtn-t small{font-size:12px;font-weight:600;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cbtn-arr{width:28px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cbtn:hover{transform:translateY(-1px)}
+.cbtn:active{transform:translateY(1px)}
+.cbtn:focus-visible{outline:3px solid #a5b4fc;outline-offset:2px}
+.cbtn-mono{font-family:ui-monospace,JetBrains Mono,monospace;letter-spacing:.5px}
+.cbtn--cp{background:#FF6B23;color:#fff;border:0;box-shadow:0 4px #c2410c,0 8px 18px #FF6B2340}
+.cbtn--cp:hover{background:#f0661c}
+.cbtn--cp:active{box-shadow:0 1px #c2410c,0 3px 8px #FF6B2340}
+.cbtn--cp .cbtn-arr{background:#fff3}
+.cbtn-lim{font-size:11px;font-weight:700;background:#fff;color:#c2410c;border-radius:4px;padding:1px 5px}
+.cbtn--tp{background:#fff;color:#0E2841;border:1.5px solid #0E2841;box-shadow:0 4px #b7c9d8,0 8px 18px #0E28411a}
+.cbtn--tp:hover{background:#f7f7ff}
+.cbtn--tp:active{box-shadow:0 1px #b7c9d8}
+.cbtn--tp .cbtn-t b{color:#0E2841}
+.cbtn--tp .cbtn-arr{background:#eaf1f6;color:#0E2841}
+.cbtn-price{font-size:12px;font-weight:600;color:#0E2841;background:#eaf1f6;border-radius:4px;padding:1px 6px}
+.cbtn--free{background:#0E2841;color:#fff;border:0;box-shadow:0 4px #081c30,0 8px 18px #0E284147}
+.cbtn--free:hover{background:#214260}
+.cbtn--free:active{box-shadow:0 1px #081c30}
+.cbtn--free .cbtn-arr{background:#fff3}
+@media(max-width:760px){.hh-plans{grid-template-columns:1fr}
+.cbtn{height:60px}
+}
+.hh-hero{display:flex;flex-wrap:wrap;align-items:flex-start;gap:56px;padding-top:64px}
+.hh-hero-l{flex:1.2 1 540px;min-width:0;display:flex;flex-direction:column;gap:24px;padding-top:12px}
+.hh-tags{display:flex;gap:8px;flex-wrap:wrap}
+.hh-tag{font-size:12px;font-weight:600;border-radius:999px;padding:5px 12px}
+.hh-tag--b{color:#0E2841;background:#eaf1f6}
+.hh-tag--o{color:#b4380f;background:#fff1ea}
+.hh-title{margin:0;font-size:46px;line-height:1.2;font-weight:700;letter-spacing:-.4px}
+.hh-lead{margin:0;font-size:16px;line-height:1.75;color:#4a4f66;max-width:520px}
+.hh-doc-link{align-self:flex-start;border:0;background:transparent;color:#0E2841;font:inherit;font-size:14px;font-weight:500;padding:0;cursor:pointer}
+.hh-doc-link:hover{color:#312e81}
+.hh-stats{display:flex;gap:20px 32px;flex-wrap:wrap}
+.hh-stat{display:flex;flex-direction:column;gap:2px}
+.hh-stat b{font-size:22px;font-weight:700}
+.hh-stat span{font-size:12px;color:#5d6278}
+.home-hero-invite{margin-top:clamp(1.75rem,3.5vw,2.5rem)}
+.home-after-hero{padding-top:clamp(1.5rem,3vw,2.25rem)}
+@media(max-height:860px){.hh-hero{padding-top:28px;gap:32px}
+.hh-hero-l{gap:14px;padding-top:0}
+.hh-title{font-size:40px}
+}
+@media(max-width:1180px){.hh-hero{flex-direction:column;gap:32px;padding-top:40px}
+.hh-hero .hh-models{flex:none;width:100%}
+.hh-title{font-size:36px}
+.hh-hero-l{flex-basis:auto;gap:18px;padding-top:0}
+}
+@media(max-width:760px){.hh-hero{padding-top:24px;gap:24px}
+.hh-hero-l{gap:16px}
+.hh-title{font-size:30px;line-height:1.25}
+.hh-lead{font-size:15px}
+.hh-stats{gap:16px 24px}
+.hh-stat b{font-size:18px}
+}
+
+
+.brand{display:flex;align-items:center;gap:6px}.brand svg{width:112px;height:auto}
+.block{margin:38px 0}.clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}
+.clients a,details{border:1px solid #dfe6ec;border-radius:12px;padding:16px 20px}.clients small{display:block;color:#486078;margin-top:6px}
+details{margin-top:8px}summary,button{cursor:pointer}.toolbar{display:flex;flex-wrap:wrap;gap:7px}.toolbar button{border:1px solid #d6dfe6;background:white;border-radius:6px;padding:6px 10px}.toolbar button[aria-pressed=true]{background:#0E2841;color:white}#copy-code{margin-left:auto}.hh-mtry{display:inline-flex;align-items:center}.cbtn--cp{color:#182430}
+@media(max-width:760px){.hh-chips{display:flex}nav{gap:12px}.brand svg{width:85px}}
+</style>
+</head>
+<body><header>
+<nav aria-label="主导航"><a class="brand" href="https://ai.exrobottech.com/" aria-label="EXBOT AI 首页"><svg width="126" height="21" viewBox="0 0 126 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_28_1337)">
+<path d="M124.825 0.0586548H104.706C104.448 0.0586548 104.203 0.266343 104.158 0.523314L103.551 3.96719C103.505 4.22416 103.677 4.43185 103.934 4.43185H110.7L108.028 19.5626C107.983 19.8196 108.155 20.0273 108.411 20.0273H114.067C114.324 20.0273 114.57 19.8196 114.614 19.5626L117.286 4.43185H124.053C124.31 4.43185 124.556 4.22416 124.6 3.96719L125.208 0.523314C125.254 0.266343 125.081 0.0586548 124.825 0.0586548Z" fill="#0B1020"/>
+<path d="M24.4447 0.0586548H8.60826C5.26426 0.0586548 2.07652 2.76565 1.48668 6.10391L0.0943217 13.9902C-0.494346 17.3261 1.73343 20.0319 5.07391 20.0355L20.9127 20.0542C21.17 20.0542 21.4156 19.8466 21.4614 19.5896L22.0689 16.1469C22.1147 15.8899 21.942 15.6822 21.6858 15.6822H7.77872C7.00676 15.6822 6.49212 15.058 6.62841 14.2871L7.00206 12.1715H19.6296C19.8869 12.1715 20.1325 11.9638 20.1772 11.7068L20.7846 8.26294C20.8305 8.00596 20.6577 7.79828 20.4016 7.79828H7.77402L8.12182 5.82934C8.25812 5.05843 8.99366 4.43419 9.76562 4.43419H23.6727C23.9301 4.43419 24.1756 4.2265 24.2203 3.96953L24.8278 0.52566C24.8736 0.26869 24.7009 0.0610015 24.4447 0.0610015V0.0586548Z" fill="#0B1020"/>
+<path d="M72.6708 0.0586822H56.7615C56.5042 0.0586822 56.2586 0.266371 56.2139 0.523341L54.5431 9.98314L54.5161 10.1357L52.8453 19.5955C52.7994 19.8524 52.9722 20.0601 53.2283 20.0601H69.1376C71.967 20.0601 74.6647 17.7697 75.1629 14.9442L75.3815 13.7028C75.6987 11.9051 74.6871 10.4056 73.0515 10.0582C74.8093 9.71091 76.3508 8.21133 76.6681 6.41371L76.8866 5.17228C77.386 2.34678 75.4966 0.0563354 72.6673 0.0563354L72.6708 0.0586822ZM69.1517 14.2918C69.0154 15.0627 68.2799 15.6869 67.5079 15.6869H60.1219L60.7282 12.2536H68.1142C68.8862 12.2536 69.4008 12.8779 69.2645 13.6488L69.1505 14.2918H69.1517ZM70.5323 6.47121C70.396 7.24212 69.6605 7.86636 68.8885 7.86636H61.5026L62.1088 4.43305H69.4948C70.2668 4.43305 70.7814 5.05729 70.6451 5.8282L70.5311 6.47121H70.5323Z" fill="#0B1020"/>
+<path d="M96.1775 0.0586548H86.4099C83.3232 0.0586548 80.6278 1.15577 79.0568 10.0523C77.4858 18.9489 79.797 20.0284 82.8837 20.0284H92.6514C95.7381 20.0284 98.43 18.9489 100.001 10.0523C101.572 1.15577 99.263 0.0586548 96.1775 0.0586548ZM92.669 14.2777C92.5327 15.0486 91.7972 15.6728 91.0252 15.6728H86.048C85.276 15.6728 84.7614 15.0486 84.8977 14.2777L86.3899 5.82817C86.5262 5.05726 87.2617 4.43302 88.0337 4.43302H93.0109C93.7829 4.43302 94.2975 5.05726 94.1612 5.82817L92.669 14.2777Z" fill="#0B1020"/>
+<path d="M42.9667 11.3149L39.0059 15.0721L42.3193 19.8102C42.3898 19.9111 42.5073 19.9686 42.6413 19.9686H47.9933C48.3928 19.9686 48.6901 19.4981 48.4798 19.1977L42.9656 11.3149H42.9667Z" fill="#0B1020"/>
+<path d="M51.5199 0H46.1678C46.0339 0 45.8952 0.0574957 45.7895 0.158406L40.8029 4.89652L43.436 8.65368L51.7337 0.770911C52.0498 0.470526 51.9194 0 51.5199 0Z" fill="#0B1020"/>
+<path d="M39.4038 6.22713L35.1621 0.158406C35.0916 0.0574957 34.9741 0 34.8402 0H29.4928C29.0933 0 28.796 0.470526 29.0064 0.770911L35.45 9.9843L25.7528 19.1977C25.4367 19.4981 25.5672 19.9686 25.9667 19.9686H31.314C31.448 19.9686 31.5866 19.9111 31.6924 19.8102L38.0772 13.7426L42.0381 9.98547L39.405 6.22831L39.4038 6.22713Z" fill="#FF6B23"/>
+</g>
+<defs>
+<clipPath id="clip0_28_1337">
+<rect width="125.215" height="20.0601" fill="#0B1020"/>
+</clipPath>
+</defs>
+</svg><small>寻者开放平台</small></a><a href="https://ai.exrobottech.com/models/">模型价格</a><a href="https://ai.exrobottech.com/docs/">文档</a><a class="console" href="https://ai.exrobottech.com/dashboard">控制台 ↗</a></nav></header>
+<main>
+<section class="hh-hero" aria-label="模型接入">
+<div class="hh-hero-l">
+<div class="hh-tags"><span class="hh-tag hh-tag--b">多模型 API</span><span class="hh-tag hh-tag--o">OpenAI 兼容</span></div>
+<h1 class="hh-title">连接主流 AI 模型<br>为团队统一管理调用</h1>
+<p class="hh-lead">在寻者开放平台选择模型、查看分组价格，用同一套接口把模型接入应用和编程工具。</p>
+<div class="hh-plans">
+<a class="cbtn cbtn--cp" href="https://ai.exrobottech.com/keys"><span class="cbtn-t"><b>获取 API Key</b><small>进入控制台</small></span><span class="cbtn-arr">→</span></a>
+<a class="cbtn cbtn--tp" href="https://ai.exrobottech.com/models/"><span class="cbtn-t"><b>模型广场</b><small>查看分组价格</small></span><span class="cbtn-arr">→</span></a>
+<a class="cbtn cbtn--free" href="#start"><span class="cbtn-t"><b>快速接入</b><small>运行首次请求</small></span><span class="cbtn-arr">→</span></a>
+</div>
+<a class="hh-doc-link" href="https://ai.exrobottech.com/docs/">查看开发文档 →</a>
+<div class="hh-stats"><div class="hh-stat"><b>REST API</b><span>标准 HTTP 调用</span></div><div class="hh-stat"><b>Codex</b><span>编程工具接入</span></div><div class="hh-stat"><b>CC Switch</b><span>客户端配置</span></div></div>
+</div>
+<section class="hh-models" id="models"><div class="hh-models-h"><b>模型速览</b><div class="hh-chips" aria-label="模型分类" role="group"><button class="hh-chip hh-chip--on" aria-pressed="true">全部</button><button class="hh-chip" aria-pressed="false">文本</button><button class="hh-chip" aria-pressed="false">图像</button></div></div>
+<div id="results" aria-live="polite"></div><div class="hh-models-f"><code class="hh-base">https://ai.exrobottech.com/v1</code><button id="copy" class="hh-copy">复制</button><a class="hh-all" href="https://ai.exrobottech.com/models/">全部模型 →</a></div></section>
+</section>
+<section class="block"><h2>连接你的客户端</h2><div class="clients"><a href="https://ai.exrobottech.com/docs/codex/"><b>Codex</b><small>配置编程工具 →</small></a><a href="https://ai.exrobottech.com/docs/clients/"><b>聊天客户端</b><small>配置兼容接口 →</small></a><a href="https://ai.exrobottech.com/docs/api/"><b>自建应用</b><small>查看 API 文档 →</small></a></div></section>
+<section class="quick" id="start"><h2>三步接入</h2><ol><li><a href="https://ai.exrobottech.com/sign-in">登录账号</a>，确认可用额度。</li><li><a href="https://ai.exrobottech.com/keys">创建 API Key</a>，按<a href="https://ai.exrobottech.com/docs/clients/">环境变量设置说明</a>配置 EXBOT_API_KEY，在同一终端运行示例。</li><li>运行示例。模型需在当前密钥的分组内开放。</li></ol>
+<div class="toolbar" role="group" aria-label="示例语言"><button data-lang="curl" aria-pressed="true">curl</button><button data-lang="Python" aria-pressed="false">Python</button><button data-lang="Node.js" aria-pressed="false">Node.js</button><button id="copy-code">复制代码</button></div><p id="runtime">在 Bash 中运行，需要 curl。</p><pre><code id="sample"></code></pre></section>
+<section class="block"><h2>查看用量与费用</h2><p>调用后进入用量日志，核对模型、分组与本次费用。</p><a href="https://ai.exrobottech.com/usage-logs">打开用量日志 →</a></section>
+<section class="block"><h2>常见问题</h2>
+<details><summary>在哪里创建 API Key？</summary><p>登录后进入「令牌」创建密钥。为不同设备分别创建密钥，便于撤销。</p></details>
+<details><summary>怎样核对模型价格？</summary><p>在模型广场选择可用分组，查看计费详情中的币种、输入和输出单价或按次价格。实际费用可在用量日志核对。</p></details>
+<details><summary>客户端可以使用哪些模型？</summary><p>模型需同时支持客户端请求的协议，并在当前令牌分组内开放。配置步骤见对应客户端文档。</p></details>
+<details><summary>如何查看一次请求的费用？</summary><p>登录控制台，在用量日志中按调用时间和模型查找对应记录。</p></details></section>
+</main><footer><span>杭州寻者机器人科技有限公司</span><a href="https://www.exrobottech.com/">公司官网 ↗</a></footer>
+<script type="module">
+const copy = document.querySelector('#copy')
+copy.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText('https://ai.exrobottech.com/v1')
+    copy.textContent = '已复制'
+  } catch {
+    copy.textContent = '请选中地址复制'
+  }
+})
+const endpoint = 'https://ai.exrobottech.com/v1/chat/completions'
+const model = 'gpt-5.6-sol'
+const payload = { model, messages: [{role:'user', content:'你好'}] }
+const samples = {
+  curl: `curl "${endpoint}" \\
+  -H "Authorization: Bearer $EXBOT_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify(payload)}'`,
+  Python: `import os
+import requests
+
+response = requests.post(
+    "${endpoint}",
+    headers={"Authorization": "Bearer " + os.environ["EXBOT_API_KEY"]},
+    json=${JSON.stringify(payload)},
+    timeout=60,
+)
+response.raise_for_status()
+print(response.json()["choices"][0]["message"]["content"])`,
+  'Node.js': `const response = await fetch("${endpoint}", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer " + process.env.EXBOT_API_KEY,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(${JSON.stringify(payload)}),
+})
+if (!response.ok) throw new Error(await response.text())
+console.log((await response.json()).choices[0].message.content)`,
+}
+const sample = document.querySelector('#sample')
+sample.textContent = samples.curl
+const prerequisites = {
+  curl: '在 Bash 中运行，需要 curl。',
+  Python: '使用 Python 3，先运行 python3 -m pip install requests，再用同一解释器执行脚本。',
+  'Node.js': '使用 Node.js 18 或更高版本。将示例保存为 example.mjs，再运行 node example.mjs。',
+}
+const languages = document.querySelectorAll('[data-lang]')
+const copyCode = document.querySelector('#copy-code')
+for (const button of languages) {
+  button.onclick = () => {
+    sample.textContent = samples[button.dataset.lang]
+    document.querySelector('#runtime').textContent = prerequisites[button.dataset.lang]
+    for (const sibling of languages) sibling.setAttribute('aria-pressed', String(sibling === button))
+    copyCode.textContent = '复制代码'
+  }
+}
+copyCode.onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(sample.textContent)
+    copyCode.textContent = '已复制'
+  } catch { copyCode.textContent = '请选中代码复制' }
+}
+const results = document.querySelector('#results')
+const chips = document.querySelectorAll('.hh-chip')
+let models = []
+let category = '全部'
+function render() {
+  results.replaceChildren()
+  for (const {name,group,kind} of models.filter(row => category === '全部' || row.kind === category).slice(0,5)) {
+    const row = document.createElement('div')
+    row.className = 'hh-mrow'
+    row.innerHTML = '<span class="hh-mlogo"></span><div class="hh-minfo"><span class="hh-mid"></span><span></span></div><a class="hh-mtry" href="https://ai.exrobottech.com/models/">查价</a>'
+    row.firstChild.textContent = name.slice(0,2).toUpperCase()
+    row.querySelector('.hh-mid').textContent = name
+    row.querySelector('.hh-minfo').lastChild.textContent = group
+    results.append(row)
+  }
+  if (!results.children.length) results.textContent = '当前暂无可展示的分组报价，请查看模型广场。'
+}
+for (const chip of chips) {
+  chip.onclick = () => {
+    category = chip.textContent
+    for (const item of chips) {
+      item.classList.toggle('hh-chip--on', item === chip)
+      item.setAttribute('aria-pressed', String(item === chip))
+    }
+    render()
+  }
+}
+results.textContent = '正在读取模型目录…'
+try {
+  const response = await fetch('https://ai.exrobottech.com/api/pricing', {cache:'no-store'})
+  if (!response.ok) throw new Error()
+  const {data,usable_group,group_ratio} = await response.json()
+  models = data.flatMap(entry => entry.enable_groups.filter(id =>
+    Object.hasOwn(usable_group,id) && Object.hasOwn(group_ratio,id)
+  ).map(id => ({name:entry.model_name, group:usable_group[id], kind:id === 'image' ? '图像' : '文本'})))
+  render()
+} catch { results.textContent = '暂时无法加载目录，请前往模型广场查看报价。' }
+</script></body></html>

@@ -1,0 +1,125 @@
+/* Matches the shared authentication layout in New API v1.0.0-rc.38. */
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) {
+  --exbot-action: #b84312;
+  --exbot-accent: #ff6b23;
+  height: auto;
+  min-height: 100svh;
+  grid-template-rows: auto 1fr;
+  background: var(--background);
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > a[href="/"] {
+  position: relative;
+  inset: auto;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > a img {
+  border-radius: 0;
+  object-fit: contain;
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > .container {
+  width: 100%;
+  max-width: none;
+  padding: 2rem 1.25rem;
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) h2 {
+  text-align: left;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) button[type="submit"] {
+  background: var(--exbot-action);
+  color: white;
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) button[type="submit"]:hover:not(:disabled) {
+  background: #9b3610;
+}
+
+@media (min-width: 900px) {
+  #root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) {
+    grid-template-columns: minmax(340px, 42%) minmax(0, 1fr);
+    grid-template-rows: 1fr;
+  }
+
+  #root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container)::before {
+    content: "";
+    grid-area: 1 / 1;
+    background:
+      linear-gradient(var(--exbot-accent), var(--exbot-accent)) 12% 78% / 72px 4px no-repeat,
+      url("/logo.svg") center / min(34%, 180px) auto no-repeat,
+      repeating-linear-gradient(135deg, transparent 0 39px, #ffffff0d 40px 41px),
+      #20252d;
+  }
+
+  #root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > a[href="/"] {
+    grid-area: 1 / 1;
+    align-self: start;
+    width: max-content;
+    border: 0;
+    color: white;
+    padding: 2rem;
+  }
+
+  #root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > a h1 {
+    display: none;
+  }
+
+  #root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > .container {
+    grid-area: 1 / 2;
+  }
+}
+
+/* Give the authentication controls a distinct EXBOT treatment. */
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > .container {
+  background: var(--muted);
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > .container > div {
+  max-width: 29rem;
+  padding: clamp(1.25rem, 4vw, 2.75rem);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--exbot-accent);
+  border-radius: .75rem;
+  background: var(--background);
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) input {
+  min-height: 3rem;
+  border-radius: .375rem;
+  background: var(--muted);
+}
+
+#root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) button[type="submit"] {
+  min-height: 3rem;
+  border-radius: .375rem;
+  font-weight: 600;
+}
+
+@media (min-width: 900px) {
+  #root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container)::before {
+    background:
+      linear-gradient(var(--exbot-accent), var(--exbot-accent)) 3rem calc(50% + 2.75rem) / 4rem 4px no-repeat,
+      repeating-linear-gradient(135deg, transparent 0 39px, #ffffff0d 40px 41px),
+      #20252d;
+  }
+
+  #root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container)::after {
+    content: "ExbotAI";
+    grid-area: 1 / 1;
+    align-self: center;
+    z-index: 1;
+    margin: 0 3rem;
+    white-space: pre-line;
+    color: #fff;
+    font-size: clamp(1.75rem, 3vw, 3.25rem);
+    font-weight: 650;
+    line-height: 1.25;
+    pointer-events: none;
+  }
+}
