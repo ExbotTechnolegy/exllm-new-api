@@ -1,0 +1,71 @@
+name: EXLLM product build
+
+on:
+  push:
+    branches: [exllm-dev]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CGO_ENABLED: '0'
+      GOOS: linux
+      GOARCH: amd64
+      GOWORK: 'off'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: '1.4.0'
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: '1.26.1'
+          cache-dependency-path: go.sum
+      - name: Build application and site from the same commit
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          version="$(cat VERSION)"
+          version="${version:-exllm-${GITHUB_SHA:0:12}}"
+
+          (
+            cd web
+            bun install --frozen-lockfile
+            DISABLE_ESLINT_PLUGIN=true VITE_REACT_APP_VERSION="$version" bun run build
+          )
+          test -s web/dist/index.html
+
+          package="$RUNNER_TEMP/package"
+          artifacts="$RUNNER_TEMP/artifacts"
+          mkdir -p "$package" "$artifacts"
+          go build -trimpath -ldflags "-s -w -X github.com/QuantumNous/new-api/common.Version=$version" -o "$package/new-api" .
+          test "$(env -u VERSION "$package/new-api" --version)" = "$version"
+          go version -m "$package/new-api" > "$RUNNER_TEMP/build-info"
+          grep -F "GOOS=linux" "$RUNNER_TEMP/build-info"
+          grep -F "GOARCH=amd64" "$RUNNER_TEMP/build-info"
+          grep -F "vcs.revision=$GITHUB_SHA" "$RUNNER_TEMP/build-info"
+
+          cp LICENSE NOTICE THIRD-PARTY-LICENSES.md "$package/"
+          tar -czf "$artifacts/new-api-linux-amd64.tar.gz" -C "$package" new-api LICENSE NOTICE THIRD-PARTY-LICENSES.md
+          git archive --format=tar "$GITHUB_SHA" exllm-site | gzip -n > "$artifacts/exllm-site.tar.gz"
+          tar -tzf "$artifacts/exllm-site.tar.gz" > "$RUNNER_TEMP/site-files"
+          grep -Fx exllm-site/landing/public.html "$RUNNER_TEMP/site-files"
+          grep -Fx exllm-site/models/index.html "$RUNNER_TEMP/site-files"
+
+          printf 'source_commit=%s\napplication_version=%s\nplatform=linux/amd64\n' "$GITHUB_SHA" "$version" > "$artifacts/BUILD-METADATA"
+          (
+            cd "$artifacts"
+            sha256sum new-api-linux-amd64.tar.gz exllm-site.tar.gz > SHA256SUMS
+          )
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: exllm-product-${{ github.sha }}
+          path: ${{ runner.temp }}/artifacts/
+          if-no-files-found: error
+          retention-days: 30
