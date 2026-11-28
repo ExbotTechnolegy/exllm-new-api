@@ -1,0 +1,96 @@
+name: EXLLM production release
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Deploy a built commit or restore the previous release
+        type: choice
+        options: [deploy, rollback]
+        required: true
+      commit:
+        description: Full exllm-dev commit SHA (deploy only)
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: exllm-production
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'ExbotTechnolegy/exllm-new-api' && github.ref == 'refs/heads/exllm-dev'
+    environment: exllm-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OPERATION: ${{ inputs.operation }}
+      RELEASE_SHA: ${{ inputs.commit }}
+      MAINTAINER: ${{ vars.EXAI_RELEASE_MAINTAINER }}
+      TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+    steps:
+      - name: Verify operator and operation
+        run: |
+          set -euo pipefail
+          if [[ -z "$MAINTAINER" || "$GITHUB_ACTOR" != "$MAINTAINER" || "$TRIGGERING_ACTOR" != "$MAINTAINER" ]]; then
+            echo "The configured EXAI maintainer must dispatch this workflow." >&2
+            exit 1
+          fi
+          case "$OPERATION" in
+            deploy) [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]] ;;
+            rollback) [[ -z "$RELEASE_SHA" ]] ;;
+            *) exit 1 ;;
+          esac
+      - name: Fetch verified product artifacts
+        if: inputs.operation == 'deploy'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch_status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$RELEASE_SHA...exllm-dev" --jq '.status')
+          [[ "$branch_status" == ahead || "$branch_status" == identical ]]
+          run_id=$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/exllm-product-build.yml/runs" \
+            -f branch=exllm-dev -f event=push -f status=success -f head_sha="$RELEASE_SHA" \
+            --jq '.workflow_runs[0].id // empty')
+          if [[ -z "$run_id" ]]; then
+            echo "No successful EXLLM product build for this exllm-dev commit." >&2
+            exit 1
+          fi
+          package="$RUNNER_TEMP/exllm-release"
+          gh run download "$run_id" --repo "$GITHUB_REPOSITORY" --name "exllm-product-$RELEASE_SHA" --dir "$package"
+          cd "$package"
+          grep -Fx "source_commit=$RELEASE_SHA" BUILD-METADATA
+          grep -Fx "platform=linux/amd64" BUILD-METADATA
+          test -s new-api-image-linux-amd64.tar.gz
+          sha256sum --strict -c SHA256SUMS
+          printf 'Product build run: %s\n' "$run_id" >> "$GITHUB_STEP_SUMMARY"
+      - name: Invoke restricted production receiver
+        env:
+          DEPLOY_TARGET: ${{ secrets.EXAI_DEPLOY_TARGET }}
+          DEPLOY_KEY: ${{ secrets.EXAI_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.EXAI_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$DEPLOY_TARGET" =~ ^[a-z_][a-z0-9_-]*@[a-zA-Z0-9][a-zA-Z0-9.-]*$ || -z "$DEPLOY_KEY" || -z "$KNOWN_HOSTS" ]]; then
+            echo "Configure the dedicated deployment account, key, and pinned host key first." >&2
+            exit 1
+          fi
+          auth=$(mktemp -d)
+          trap 'rm -rf -- "$auth"' EXIT
+          umask 077
+          printf '%s\n' "$DEPLOY_KEY" > "$auth/key"
+          printf '%s\n' "$KNOWN_HOSTS" > "$auth/known_hosts"
+          remote=(ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes -i "$auth/key"
+            -o ConnectTimeout=10 -o ServerAliveInterval=10 -o ServerAliveCountMax=3
+            -o StrictHostKeyChecking=yes -o GlobalKnownHostsFile=/dev/null
+            -o "UserKnownHostsFile=$auth/known_hosts" "$DEPLOY_TARGET")
+          if [[ "$OPERATION" == rollback ]]; then
+            "${remote[@]}" rollback </dev/null
+          else
+            tar -C "$RUNNER_TEMP/exllm-release" -cf - BUILD-METADATA SHA256SUMS \
+              new-api-image-linux-amd64.tar.gz new-api-linux-amd64.tar.gz exllm-site.tar.gz |
+              "${remote[@]}" "deploy $RELEASE_SHA"
+          fi

@@ -51,6 +51,15 @@ jobs:
           grep -F "GOARCH=amd64" "$RUNNER_TEMP/build-info"
           grep -F "vcs.revision=$GITHUB_SHA" "$RUNNER_TEMP/build-info"
 
+          image="exllm-release:$GITHUB_SHA"
+          docker buildx build --load --platform linux/amd64 --target product-artifact \
+            --build-context "product_binary=$package" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --label "org.opencontainers.image.version=$version" \
+            --tag "$image" .
+          test "$(docker run --rm "$image" --version)" = "$version"
+          docker save "$image" | gzip -n > "$artifacts/new-api-image-linux-amd64.tar.gz"
+
           cp LICENSE NOTICE THIRD-PARTY-LICENSES.md "$package/"
           tar -czf "$artifacts/new-api-linux-amd64.tar.gz" -C "$package" new-api LICENSE NOTICE THIRD-PARTY-LICENSES.md
           git archive --format=tar "$GITHUB_SHA" exllm-site | gzip -n > "$artifacts/exllm-site.tar.gz"
@@ -61,7 +70,7 @@ jobs:
           printf 'source_commit=%s\napplication_version=%s\nplatform=linux/amd64\n' "$GITHUB_SHA" "$version" > "$artifacts/BUILD-METADATA"
           (
             cd "$artifacts"
-            sha256sum new-api-linux-amd64.tar.gz exllm-site.tar.gz > SHA256SUMS
+            sha256sum new-api-linux-amd64.tar.gz new-api-image-linux-amd64.tar.gz exllm-site.tar.gz > SHA256SUMS
           )
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
