@@ -52,7 +52,7 @@
     grid-area: 1 / 1;
     background:
       linear-gradient(var(--exbot-accent), var(--exbot-accent)) 12% 78% / 72px 4px no-repeat,
-      url("/logo.svg") center / min(34%, 180px) auto no-repeat,
+      url("/models/exai.svg") center / min(34%, 180px) auto no-repeat,
       repeating-linear-gradient(135deg, transparent 0 39px, #ffffff0d 40px 41px),
       #20252d;
   }
@@ -75,7 +75,7 @@
   }
 }
 
-/* Give the authentication controls a distinct EXBOT treatment. */
+/* Give the authentication controls a distinct EXAI treatment. */
 #root .relative.grid.h-svh.max-w-none:has(> a[href="/"] + .container) > .container {
   background: var(--muted);
 }
