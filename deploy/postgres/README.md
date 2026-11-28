@@ -47,6 +47,12 @@ The production Compose layout follows the [New API deployment guide](https://doc
 3. Cut the existing Nginx upstream over to the healthy container. Keep the public route for the payment bridge. If switching loopback port, validate the private Nginx configuration before reloading. Reconnect the approved bridge callback and replay/reconcile queue to the new New API, verify existing notifications remain idempotent, and check for uncredited payments. Resume writes and new payments only after approval. Leave the SQLite-specific expiry job stopped until its PostgreSQL-compatible replacement is verified.
 4. Record the source commit, image identifiers, snapshot timestamp, release pointers, verification results and decision maker in the private release record. Monitor callback failures, stuck orders, database errors and usage settlement. Take the first PostgreSQL backup and test its restore on an isolated target.
 
+## Expired wallet top-ups
+
+Keep the SQLite timer disabled. It ran every 10 minutes and marked all pending top-ups older than 30 minutes as expired. Porting that update to PostgreSQL would block late payments: the bridge retries paid orders until New API acknowledges them, and `RechargeEpay` rejects an expired top-up. The bridge's local `expired` status is based on a clock. A signed payment notification can still promote that order to paid.
+
+Use [audit-stale-topups.sql](audit-stale-topups.sql) through a read-only PostgreSQL session to count pending and aging top-ups. For aging bridge orders, reconcile against authenticated merchant status and check the bridge for paid orders awaiting delivery. Keep order history. A pending top-up is eligible for automatic expiry only after the merchant confirms a final, unpaid closure, or after a product release can safely settle a verified late payment on an expired order. Verify those cases, including repeated delivery crediting the wallet once, before enabling a 10-minute replacement timer.
+
 ## Rollback decision
 
 - **Before PostgreSQL accepts any customer writes, including a callback replay**, the authorized release operator may freeze routes again and restore the old application and SQLite snapshot, then reopen callbacks only after reconciliation. Maintain one active writer.
