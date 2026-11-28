@@ -1,0 +1,61 @@
+# EXAI production stack. Supply image digests and runtime values from private deployment configuration.
+services:
+  new-api:
+    image: ${EXAI_IMAGE:?Set the approved EXAI image digest}
+    platform: linux/amd64
+    restart: unless-stopped
+    command: ["--log-dir", "/app/logs"]
+    ports:
+      - "127.0.0.1:${EXAI_HTTP_PORT:-3001}:3000"
+    env_file:
+      - ${EXAI_APP_ENV_FILE:?Set the path to the private New API env file}
+    environment:
+      SQL_DSN: ${EXAI_SQL_DSN:?Set the application PostgreSQL DSN}
+      REDIS_CONN_STRING: ${EXAI_REDIS_URL:?Set the authenticated Redis URL}
+      TZ: Asia/Shanghai
+    volumes:
+      - app-data:/data
+      - app-logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/status | grep -Eq '\"success\"[[:space:]]*:[[:space:]]*true'"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
+      start_period: 30s
+
+  postgres:
+    image: ${EXAI_POSTGRES_IMAGE:?Set the approved PostgreSQL 15 image digest}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${EXAI_POSTGRES_DB:?Set the database name}
+      POSTGRES_USER: ${EXAI_POSTGRES_USER:?Set the database owner}
+      POSTGRES_PASSWORD: ${EXAI_POSTGRES_PASSWORD:?Set the database password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  redis:
+    image: ${EXAI_REDIS_IMAGE:?Set the approved Redis image digest}
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${EXAI_REDIS_PASSWORD:?Set the Redis password}
+    command: ["sh", "-ec", "exec redis-server --requirepass \"$$REDIS_PASSWORD\""]
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli --raw ping | grep -Fx PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  app-data:
+  app-logs:
+  postgres-data:

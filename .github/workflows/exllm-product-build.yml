@@ -58,10 +58,17 @@ jobs:
           grep -Fx exllm-site/landing/public.html "$RUNNER_TEMP/site-files"
           grep -Fx exllm-site/models/index.html "$RUNNER_TEMP/site-files"
 
+          image="exllm-new-api:$GITHUB_SHA"
+          docker buildx build --platform linux/amd64 --target product-artifact \
+            --build-context "product_binary=$package" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" --tag "$image" --load .
+          test "$(docker run --rm "$image" --version)" = "$version"
+          docker save "$image" | gzip -n > "$artifacts/new-api-image-linux-amd64.tar.gz"
+
           printf 'source_commit=%s\napplication_version=%s\nplatform=linux/amd64\n' "$GITHUB_SHA" "$version" > "$artifacts/BUILD-METADATA"
           (
             cd "$artifacts"
-            sha256sum new-api-linux-amd64.tar.gz exllm-site.tar.gz > SHA256SUMS
+            sha256sum new-api-linux-amd64.tar.gz exllm-site.tar.gz new-api-image-linux-amd64.tar.gz > SHA256SUMS
           )
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
