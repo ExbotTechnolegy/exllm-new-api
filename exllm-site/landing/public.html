@@ -125,7 +125,7 @@ details{margin-top:8px}summary,button{cursor:pointer}.toolbar{display:flex;flex-
     <path d="M51.5199 0H46.1678C46.0339 0 45.8952 0.0574957 45.7895 0.158406L40.8029 4.89652L43.436 8.65368L51.7337 0.770911C52.0498 0.470526 51.9194 0 51.5199 0Z" fill="currentColor"/>
     <path d="M39.4038 6.22713L35.1621 0.158406C35.0916 0.0574957 34.9741 0 34.8402 0H29.4928C29.0933 0 28.796 0.470526 29.0064 0.770911L35.45 9.9843L25.7528 19.1977C25.4367 19.4981 25.5672 19.9686 25.9667 19.9686H31.314C31.448 19.9686 31.5866 19.9111 31.6924 19.8102L38.0772 13.7426L42.0381 9.98547L39.405 6.22831L39.4038 6.22713Z" fill="#FF6B23"/>
     <path fill="currentColor" fill-rule="evenodd" d="M52.8453 20.0272L65.2053 0.0585938H72.9653L78.2753 20.0272H71.6553L70.7253 15.9672H61.8553L59.4653 20.0272H52.8453ZM64.4353 11.594H69.7253L68.2253 5.074L64.4353 11.594Z"/>
-    <path fill="currentColor" d="M85.205 0.0585938H90.861C91.118 0.0585938 91.290 0.266282 91.245 0.523253L87.884 19.5625C87.839 19.8195 87.593 20.0272 87.336 20.0272H81.68C81.423 20.0272 81.251 19.8195 81.296 19.5625L84.657 0.523253C84.702 0.266282 84.948 0.0585938 85.205 0.0585938Z"/></svg><small>寻者开放平台</small></a><a href="https://ai.exrobottech.com/models/">模型价格</a><a href="https://ai.exrobottech.com/docs/">文档</a><a class="console" href="https://ai.exrobottech.com/dashboard">控制台 ↗</a></nav></header>
+    <path fill="currentColor" d="M85.205 0.0585938H90.861C91.118 0.0585938 91.290 0.266282 91.245 0.523253L87.884 19.5625C87.839 19.8195 87.593 20.0272 87.336 20.0272H81.68C81.423 20.0272 81.251 19.8195 81.296 19.5625L84.657 0.523253C84.702 0.266282 84.948 0.0585938 85.205 0.0585938Z"/></svg><small>寻者开放平台</small></a><a href="/pricing">模型价格</a><a href="https://ai.exrobottech.com/docs/">文档</a><a class="console" href="https://ai.exrobottech.com/dashboard">控制台 ↗</a></nav></header>
 <main>
 <section class="hh-hero" aria-label="模型接入">
 <div class="hh-hero-l">
@@ -134,14 +134,14 @@ details{margin-top:8px}summary,button{cursor:pointer}.toolbar{display:flex;flex-
 <p class="hh-lead">在寻者开放平台选择模型、查看分组价格，用同一套接口把模型接入应用和编程工具。</p>
 <div class="hh-plans">
 <a class="cbtn cbtn--cp" href="https://ai.exrobottech.com/keys"><span class="cbtn-t"><b>获取 API Key</b><small>进入控制台</small></span><span class="cbtn-arr">→</span></a>
-<a class="cbtn cbtn--tp" href="https://ai.exrobottech.com/models/"><span class="cbtn-t"><b>模型广场</b><small>查看分组价格</small></span><span class="cbtn-arr">→</span></a>
+<a class="cbtn cbtn--tp" href="/pricing"><span class="cbtn-t"><b>模型广场</b><small>查看分组价格</small></span><span class="cbtn-arr">→</span></a>
 <a class="cbtn cbtn--free" href="#start"><span class="cbtn-t"><b>快速接入</b><small>运行首次请求</small></span><span class="cbtn-arr">→</span></a>
 </div>
 <a class="hh-doc-link" href="https://ai.exrobottech.com/docs/">查看开发文档 →</a>
 <div class="hh-stats"><div class="hh-stat"><b>REST API</b><span>标准 HTTP 调用</span></div><div class="hh-stat"><b>Codex</b><span>编程工具接入</span></div><div class="hh-stat"><b>CC Switch</b><span>客户端配置</span></div></div>
 </div>
 <section class="hh-models" id="models"><div class="hh-models-h"><b>模型速览</b><div class="hh-chips" aria-label="模型分类" role="group"><button class="hh-chip hh-chip--on" aria-pressed="true">全部</button><button class="hh-chip" aria-pressed="false">文本</button><button class="hh-chip" aria-pressed="false">图像</button></div></div>
-<div id="results" aria-live="polite"></div><div class="hh-models-f"><code class="hh-base">https://ai.exrobottech.com/v1</code><button id="copy" class="hh-copy">复制</button><a class="hh-all" href="https://ai.exrobottech.com/models/">全部模型 →</a></div></section>
+<div id="results" aria-live="polite"></div><div class="hh-models-f"><code class="hh-base">https://ai.exrobottech.com/v1</code><button id="copy" class="hh-copy">复制</button><a class="hh-all" href="/pricing">全部模型 →</a></div></section>
 </section>
 <section class="block"><h2>连接你的客户端</h2><div class="clients"><a href="https://ai.exrobottech.com/docs/codex/"><b>Codex</b><small>配置编程工具 →</small></a><a href="https://ai.exrobottech.com/docs/clients/"><b>聊天客户端</b><small>配置兼容接口 →</small></a><a href="https://ai.exrobottech.com/docs/api/"><b>自建应用</b><small>查看 API 文档 →</small></a></div></section>
 <section class="quick" id="start"><h2>三步接入</h2><ol><li><a href="https://ai.exrobottech.com/sign-in">登录账号</a>，确认可用额度。</li><li><a href="https://ai.exrobottech.com/keys">创建 API Key</a>，按<a href="https://ai.exrobottech.com/docs/clients/">环境变量设置说明</a>配置 EXBOT_API_KEY，在同一终端运行示例。</li><li>运行示例。模型需在当前密钥的分组内开放。</li></ol>
@@ -225,7 +225,7 @@ function render() {
   for (const {name,group,kind} of models.filter(row => category === '全部' || row.kind === category).slice(0,5)) {
     const row = document.createElement('div')
     row.className = 'hh-mrow'
-    row.innerHTML = '<span class="hh-mlogo"></span><div class="hh-minfo"><span class="hh-mid"></span><span></span></div><a class="hh-mtry" href="https://ai.exrobottech.com/models/">查价</a>'
+    row.innerHTML = '<span class="hh-mlogo"></span><div class="hh-minfo"><span class="hh-mid"></span><span></span></div><a class="hh-mtry" href="/pricing">查价</a>'
     row.firstChild.textContent = name.slice(0,2).toUpperCase()
     row.querySelector('.hh-mid').textContent = name
     row.querySelector('.hh-minfo').lastChild.textContent = group
