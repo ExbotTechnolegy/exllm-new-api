@@ -14,7 +14,7 @@ Verify the downloaded files with `sha256sum -c SHA256SUMS` on Linux. Check that 
 
 ## Release and rollback
 
-The maintainer runs **EXLLM production release** from Actions on `exllm-dev`. For `deploy`, enter the full SHA of a successful product build on that branch. For `rollback`, leave the commit blank to restore the previous image and static release together. Both operations use the same GitHub concurrency group and the host site's release lock.
+The maintainer runs **EXLLM production release** from Actions on `exllm-dev`. Choose `deploy` to use the latest successful product build with a complete, available release package. The run summary links to the selected build and shows its commit. If no build is available, the workflow stops before connecting to production. Choose `rollback` to restore the previous image and static release together. Both operations use the same GitHub concurrency group and the host site's release lock.
 
 The receiver verifies the build metadata and checksums, loads the image, and stages a static directory beside the current release. Existing docs and other assets carry forward when the package omits them. It replaces only the `new-api` Compose service's image setting and atomically swaps the site pointer. It checks the origin API version, exact homepage, model market and docs content, and console HTML at `/sign-in` and `/keys`. If an activation fails, it restores and verifies both previous pointers and the Actions run fails. If a release is interrupted, dispatch `rollback` to finish restoring the last confirmed release. Keep the recorded current and previous site directories and Docker images available.
 

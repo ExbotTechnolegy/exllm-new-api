@@ -4,13 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Deploy a built commit or restore the previous release
+        description: Deploy the latest available build or restore the previous release
         type: choice
         options: [deploy, rollback]
         required: true
-      commit:
-        description: Full exllm-dev commit SHA (deploy only)
-        type: string
 
 permissions:
   actions: read
@@ -28,7 +25,6 @@ jobs:
     timeout-minutes: 20
     env:
       OPERATION: ${{ inputs.operation }}
-      RELEASE_SHA: ${{ inputs.commit }}
       MAINTAINER: ${{ vars.EXAI_RELEASE_MAINTAINER }}
       TRIGGERING_ACTOR: ${{ github.triggering_actor }}
     steps:
@@ -40,8 +36,7 @@ jobs:
             exit 1
           fi
           case "$OPERATION" in
-            deploy) [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]] ;;
-            rollback) [[ -z "$RELEASE_SHA" ]] ;;
+            deploy|rollback) ;;
             *) exit 1 ;;
           esac
       - name: Fetch verified product artifacts
@@ -50,23 +45,42 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          branch_status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$RELEASE_SHA...exllm-dev" --jq '.status')
-          [[ "$branch_status" == ahead || "$branch_status" == identical ]]
-          run_id=$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/exllm-product-build.yml/runs" \
-            -f branch=exllm-dev -f event=push -f status=success -f head_sha="$RELEASE_SHA" \
-            --jq '.workflow_runs[0].id // empty')
-          if [[ -z "$run_id" ]]; then
-            echo "No successful EXLLM product build for this exllm-dev commit." >&2
-            exit 1
-          fi
-          package="$RUNNER_TEMP/exllm-release"
-          gh run download "$run_id" --repo "$GITHUB_REPOSITORY" --name "exllm-product-$RELEASE_SHA" --dir "$package"
-          cd "$package"
-          grep -Fx "source_commit=$RELEASE_SHA" BUILD-METADATA
-          grep -Fx "platform=linux/amd64" BUILD-METADATA
-          test -s new-api-image-linux-amd64.tar.gz
-          sha256sum --strict -c SHA256SUMS
-          printf 'Product build run: %s\n' "$run_id" >> "$GITHUB_STEP_SUMMARY"
+          runs=$(gh api --paginate --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/exllm-product-build.yml/runs" \
+            -f branch=exllm-dev -f event=push -f status=success -F per_page=100 \
+            --jq '.workflow_runs[] | [.run_number, .id, .head_sha] | @tsv' | sort -k1,1nr)
+          while IFS=$'\t' read -r _ run_id sha; do
+            [[ "$sha" =~ ^[a-f0-9]{40}$ ]] || continue
+            artifact="exllm-product-$sha"
+            available=$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts" \
+              -f name="$artifact" --jq 'any(.artifacts[]; .expired == false and .size_in_bytes > 0)')
+            [[ "$available" == true ]] || continue
+            branch_status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$sha...exllm-dev" --jq '.status')
+            [[ "$branch_status" == ahead || "$branch_status" == identical ]] || continue
+
+            candidate=$(mktemp -d "$RUNNER_TEMP/exllm-candidate.XXXXXX")
+            if ! gh run download "$run_id" --repo "$GITHUB_REPOSITORY" --name "$artifact" --dir "$candidate" ||
+               [[ ! -s "$candidate/new-api-image-linux-amd64.tar.gz" ||
+                  ! -s "$candidate/new-api-linux-amd64.tar.gz" ||
+                  ! -s "$candidate/exllm-site.tar.gz" ||
+                  ! -s "$candidate/BUILD-METADATA" || ! -s "$candidate/SHA256SUMS" ]]; then
+              echo "Build $run_id has no downloadable, complete release package."
+              rm -rf -- "$candidate"
+              continue
+            fi
+            (
+              cd "$candidate"
+              grep -Fx "source_commit=$sha" BUILD-METADATA
+              grep -Fx "platform=linux/amd64" BUILD-METADATA
+              sha256sum --strict -c SHA256SUMS
+            )
+            mv -- "$candidate" "$RUNNER_TEMP/exllm-release"
+            printf 'RELEASE_SHA=%s\n' "$sha" >> "$GITHUB_ENV"
+            printf 'Product commit **%s**\n\n[Product build run %s](%s/%s/actions/runs/%s)\n' \
+              "$sha" "$run_id" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$run_id" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          done <<< "$runs"
+          echo "No successful EXLLM product build on exllm-dev has an available release package." >&2
+          exit 1
       - name: Invoke restricted production receiver
         env:
           DEPLOY_TARGET: ${{ secrets.EXAI_DEPLOY_TARGET }}
